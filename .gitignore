@@ -9,7 +9,9 @@
 !.yarn/plugins
 !.yarn/releases
 !.yarn/versions
-
+.agents
+.claude
+.windsurf
 # testing
 /coverage
 
@@ -36,6 +38,13 @@ yarn-error.log*
 # vercel
 .vercel
 
+# local static site storage (runtime data, not source)
+/storage/
+project-context
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+/src/generated/prisma
+
+project-context
