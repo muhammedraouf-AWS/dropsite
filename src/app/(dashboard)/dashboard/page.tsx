@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { ProjectList } from "@/features/projects/components/ProjectList";
 import { listProjectsForUser } from "@/features/projects/service";
@@ -16,8 +17,7 @@ export default async function DashboardPage() {
             Your hosted static sites.
           </p>
         </div>
-        {/* Upload flow ships in Phase 2 — see project-context/ROADMAP.md */}
-        <Button disabled title="Upload arrives in Phase 2">
+        <Button nativeButton={false} render={<Link href="/dashboard/upload" />}>
           Upload
         </Button>
       </div>
