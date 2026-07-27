@@ -1,5 +1,6 @@
 import { getProjectBySlug } from "@/features/projects/service";
 import { getContentType } from "@/features/sites/content-type";
+import { injectBaseTag } from "@/features/sites/inject-base-tag";
 import { getStorageService } from "@/features/storage/service";
 
 function notFound(): Response {
@@ -28,12 +29,17 @@ export async function GET(
     return notFound();
   }
 
+  const contentType = getContentType(relativeAssetPath);
+
   try {
+    if (contentType.startsWith("text/html")) {
+      const buffer = await storage.read(assetStoragePath);
+      const html = injectBaseTag(buffer.toString("utf-8"), project.slug, relativeAssetPath);
+      return new Response(html, { status: 200, headers: { "Content-Type": contentType } });
+    }
+
     const stream = await storage.download(assetStoragePath);
-    return new Response(stream, {
-      status: 200,
-      headers: { "Content-Type": getContentType(relativeAssetPath) },
-    });
+    return new Response(stream, { status: 200, headers: { "Content-Type": contentType } });
   } catch {
     return notFound();
   }
