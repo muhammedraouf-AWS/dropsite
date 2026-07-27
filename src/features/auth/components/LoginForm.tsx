@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Button } from "@/components/ui/button";
@@ -10,8 +10,18 @@ import { Label } from "@/components/ui/label";
 import { authClient } from "@/lib/auth-client";
 import { signInSchema, type SignInInput } from "@/features/auth/schema";
 
+/** Only ever follow a same-origin relative path — never an absolute or
+ * protocol-relative URL a query param could otherwise smuggle in. */
+function safeRedirectTarget(raw: string | null): string {
+  if (raw && raw.startsWith("/") && !raw.startsWith("//")) {
+    return raw;
+  }
+  return "/dashboard";
+}
+
 export function LoginForm() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [serverError, setServerError] = useState<string | null>(null);
 
   const {
@@ -34,7 +44,7 @@ export function LoginForm() {
       return;
     }
 
-    router.push("/dashboard");
+    router.push(safeRedirectTarget(searchParams.get("redirect")));
     router.refresh();
   }
 

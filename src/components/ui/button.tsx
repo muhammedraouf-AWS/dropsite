@@ -50,6 +50,12 @@ function Button({
     <ButtonPrimitive
       data-slot="button"
       className={cn(buttonVariants({ variant, size, className }))}
+      // Browser extensions (form fillers, password managers) commonly stamp
+      // an `fdprocessedid` attribute onto buttons/inputs before React
+      // hydrates, which React then reports as a hydration mismatch it
+      // "won't patch up." That's third-party DOM mutation, not a real
+      // server/client markup difference, so it's safe to suppress here.
+      suppressHydrationWarning
       {...props}
     />
   )

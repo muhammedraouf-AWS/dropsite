@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { Suspense } from "react";
 import {
   Card,
   CardContent,
@@ -16,7 +17,9 @@ export default function LoginPage() {
         <CardDescription>Welcome back to DropSite.</CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
-        <LoginForm />
+        <Suspense>
+          <LoginForm />
+        </Suspense>
         <p className="text-center text-sm text-muted-foreground">
           Don&apos;t have an account?{" "}
           <Link href="/signup" className="font-medium text-foreground underline">
