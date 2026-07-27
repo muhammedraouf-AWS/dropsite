@@ -8,6 +8,15 @@ export function listProjectsForUser(userId: string) {
   });
 }
 
+export function getProjectBySlug(slug: string) {
+  return prisma.project.findUnique({ where: { slug } });
+}
+
+/** Scoped to `userId` so callers never need a separate ownership check. */
+export function getProjectForOwner(userId: string, projectId: string) {
+  return prisma.project.findFirst({ where: { id: projectId, userId } });
+}
+
 // Strips combining diacritical marks left behind by NFKD normalization
 // (e.g. turns "café" into "cafe" instead of dropping the whole character).
 const COMBINING_MARKS = /\p{Mn}/gu;

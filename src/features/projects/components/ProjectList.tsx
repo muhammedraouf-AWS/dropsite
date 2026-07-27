@@ -24,7 +24,14 @@ export function ProjectList({ projects }: { projects: Project[] }) {
             <CardContent className="flex items-center justify-between gap-4 py-4">
               <div>
                 <p className="font-medium">{project.name}</p>
-                <p className="text-sm text-muted-foreground">/sites/{project.slug}</p>
+                <a
+                  href={`/sites/${project.slug}`}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="text-sm text-muted-foreground underline"
+                >
+                  /sites/{project.slug}
+                </a>
               </div>
               <Link
                 href={`/dashboard/projects/${project.id}`}

@@ -59,10 +59,15 @@ export class LocalStorageProvider implements StorageService {
     await fs.rm(this.resolve(relPath), { recursive: true, force: true });
   }
 
+  /**
+   * True only for a servable file — a directory is deliberately reported
+   * as not existing so callers (notably the static-site route) never end
+   * up trying to serve a directory listing.
+   */
   async exists(relPath: string): Promise<boolean> {
     try {
-      await fs.access(this.resolve(relPath));
-      return true;
+      const stats = await fs.stat(this.resolve(relPath));
+      return stats.isFile();
     } catch {
       return false;
     }
