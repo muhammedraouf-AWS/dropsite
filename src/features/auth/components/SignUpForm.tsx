@@ -70,6 +70,19 @@ export function SignUpForm() {
         )}
       </div>
 
+      <div className="space-y-2">
+        <Label htmlFor="confirmPassword">Confirm password</Label>
+        <Input
+          id="confirmPassword"
+          type="password"
+          autoComplete="new-password"
+          {...register("confirmPassword")}
+        />
+        {errors.confirmPassword && (
+          <p className="text-sm text-destructive">{errors.confirmPassword.message}</p>
+        )}
+      </div>
+
       {serverError && <p className="text-sm text-destructive">{serverError}</p>}
 
       <Button type="submit" className="w-full" disabled={isSubmitting}>
