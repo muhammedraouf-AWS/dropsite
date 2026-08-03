@@ -3,10 +3,10 @@ import type { ReadableStream as NodeWebReadableStream } from "node:stream/web";
 import {
   S3Client,
   GetObjectCommand,
-  DeleteObjectCommand,
   DeleteObjectsCommand,
   HeadObjectCommand,
   ListObjectsV2Command,
+  ListObjectVersionsCommand,
 } from "@aws-sdk/client-s3";
 import { Upload } from "@aws-sdk/lib-storage";
 import type { StorageService } from "@/features/storage/service";
@@ -91,38 +91,49 @@ export class B2StorageProvider implements StorageService {
   }
 
   async delete(relPath: string): Promise<void> {
-    const key = normalizeKey(relPath);
-    await this.client.send(new DeleteObjectCommand({ Bucket: this.bucket, Key: key }));
+    await this.purgeAllVersions(normalizeKey(relPath), false);
   }
 
   async deleteDirectory(relPath: string): Promise<void> {
-    const prefix = `${normalizeKey(relPath)}/`;
-    let continuationToken: string | undefined;
+    await this.purgeAllVersions(`${normalizeKey(relPath)}/`, true);
+  }
+
+  /**
+   * B2 buckets keep file version history by default — an unversioned
+   * `DeleteObject` only adds a "hide" marker on top of the current version;
+   * the previous version's bytes stay in the bucket (and billed) until
+   * something purges them. Deleting a project is meant to actually remove
+   * the files, so this lists every version (and any existing hide markers)
+   * under the key/prefix and deletes each one by its specific `VersionId`,
+   * which permanently removes it instead of adding another marker.
+   */
+  private async purgeAllVersions(keyOrPrefix: string, isPrefix: boolean): Promise<void> {
+    let keyMarker: string | undefined;
+    let versionIdMarker: string | undefined;
 
     do {
       const listed = await this.client.send(
-        new ListObjectsV2Command({
+        new ListObjectVersionsCommand({
           Bucket: this.bucket,
-          Prefix: prefix,
-          ContinuationToken: continuationToken,
+          Prefix: keyOrPrefix,
+          KeyMarker: keyMarker,
+          VersionIdMarker: versionIdMarker,
         })
       );
 
-      const keys = (listed.Contents ?? [])
-        .map((obj) => obj.Key)
-        .filter((k): k is string => Boolean(k));
+      const entries = [...(listed.Versions ?? []), ...(listed.DeleteMarkers ?? [])]
+        .filter((entry) => isPrefix || entry.Key === keyOrPrefix)
+        .map((entry) => ({ Key: entry.Key!, VersionId: entry.VersionId }));
 
-      if (keys.length > 0) {
+      if (entries.length > 0) {
         await this.client.send(
-          new DeleteObjectsCommand({
-            Bucket: this.bucket,
-            Delete: { Objects: keys.map((Key) => ({ Key })) },
-          })
+          new DeleteObjectsCommand({ Bucket: this.bucket, Delete: { Objects: entries } })
         );
       }
 
-      continuationToken = listed.IsTruncated ? listed.NextContinuationToken : undefined;
-    } while (continuationToken);
+      keyMarker = listed.IsTruncated ? listed.NextKeyMarker : undefined;
+      versionIdMarker = listed.IsTruncated ? listed.NextVersionIdMarker : undefined;
+    } while (keyMarker);
   }
 
   /** True only for a servable object — never true for a bare prefix, since S3 has no real directories. */

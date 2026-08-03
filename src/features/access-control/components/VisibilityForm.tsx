@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState, useEffect, useState } from "react";
+import { useActionState, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -37,16 +37,10 @@ export function VisibilityForm({
     updateVisibilityAction,
     initialVisibilityFormState
   );
+  // Seeded from `currentVisibility` and never needs to re-sync afterward:
+  // `updateVisibilityAction` redirects back to this page on success, so a
+  // successful save always remounts this component with the fresh prop.
   const [visibility, setVisibility] = useState<Visibility>(currentVisibility);
-
-  // `useState(currentVisibility)` only seeds the initial value — it never
-  // re-syncs on its own. After a successful save, the server refreshes this
-  // page with the new `currentVisibility`, but without this effect the
-  // radio selection would keep showing whatever was selected client-side
-  // until a full page reload.
-  useEffect(() => {
-    setVisibility(currentVisibility);
-  }, [currentVisibility]);
 
   return (
     <form action={formAction} className="space-y-4">

@@ -58,8 +58,11 @@ export async function updateVisibilityAction(
     data: { visibility, passwordHash },
   });
 
+  // Redirect (rather than just revalidatePath + return) so the client gets
+  // an explicit fresh navigation instead of relying on the in-place RSC
+  // merge — matches every other mutation action in this file/feature.
   revalidatePath(`/dashboard/projects/${project.id}`);
-  return { error: null };
+  redirect(`/dashboard/projects/${project.id}`);
 }
 
 export async function addAllowlistEmailAction(
@@ -93,7 +96,7 @@ export async function addAllowlistEmailAction(
   });
 
   revalidatePath(`/dashboard/projects/${project.id}`);
-  return { error: null };
+  redirect(`/dashboard/projects/${project.id}`);
 }
 
 /**

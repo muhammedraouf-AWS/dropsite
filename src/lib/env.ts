@@ -13,6 +13,7 @@ const envSchema = z
     B2_REGION: z.string().optional(),
     B2_KEY_ID: z.string().optional(),
     B2_APPLICATION_KEY: z.string().optional(),
+    ADMIN_EMAILS: z.string().optional(),
   })
   .superRefine((value, ctx) => {
     if (value.STORAGE_PROVIDER !== "b2") return;
@@ -41,4 +42,5 @@ export const env = envSchema.parse({
   B2_REGION: process.env.B2_REGION,
   B2_KEY_ID: process.env.B2_KEY_ID,
   B2_APPLICATION_KEY: process.env.B2_APPLICATION_KEY,
+  ADMIN_EMAILS: process.env.ADMIN_EMAILS,
 });

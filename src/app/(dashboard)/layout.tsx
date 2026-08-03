@@ -2,6 +2,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { getSession } from "@/features/auth/session";
 import { SignOutButton } from "@/features/auth/components/SignOutButton";
+import { isAdminEmail } from "@/features/admin/service";
 
 export default async function DashboardLayout({
   children,
@@ -21,6 +22,11 @@ export default async function DashboardLayout({
           DropSite
         </Link>
         <div className="flex items-center gap-4">
+          {isAdminEmail(session.user.email) && (
+            <Link href="/dashboard/admin" className="text-sm font-medium underline">
+              Admin
+            </Link>
+          )}
           <span className="text-sm text-muted-foreground">
             {session.user.email}
           </span>
